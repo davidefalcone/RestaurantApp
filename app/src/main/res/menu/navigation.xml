@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/dishes"
+        android:icon="@drawable/baseline_fastfood_24"
+        android:title="@string/title_daily_offer" />
+    <item
+        android:id="@+id/reservations"
+        android:icon="@drawable/baseline_group_24"
+        android:title="@string/title_reservations" />
+    <item
+        android:id="@+id/profile"
+        android:icon="@drawable/account_name"
+        android:title="@string/title_profile" />
+
+</menu>

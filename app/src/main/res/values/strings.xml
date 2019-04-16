@@ -1,0 +1,25 @@
+<resources>
+    <string name="editText">Edit</string>
+    <string name="hintEmail">Mail</string>
+    <string name="hintDescription">Short Description</string>
+    <string name="hintName">Name</string>
+    <string name="hintPrice">Price</string>
+    <string name="hintQuantity">Available quantity</string>
+    <string name="app_name">RestaurantApp</string>
+    <string name="dialogTitle">Choose from</string>
+    <string name="editButton">edit</string>
+    <string name="deleteButton">delete</string>
+    <string name="galleryText">Gallery</string>
+    <string name="cameraText">Camera</string>
+    <string name="hintDate">Date</string>
+    <string name="hintNotes">Notes</string>
+    <string name="hintDishes">Ordered dishes</string>
+    <string name="hintRestaurantAddress">Restaurant Address</string>
+    <string name="messageMissingMultipleData">Some data are missing</string>
+    <string name="title_activity_daily_offer">DailyOfferActivity</string>
+    <string name="title_profile">Profile</string>
+    <string name="title_daily_offer">Daily Offer</string>
+    <string name="title_reservations">Reservations</string>
+    <string name="messageNoDishes">You have no dishes yet</string>
+
+</resources>

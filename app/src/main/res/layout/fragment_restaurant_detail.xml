@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RestaurantDetailFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/floating_action_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:foregroundGravity="bottom"
+            android:src="@drawable/baseline_add_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/restaurantImage"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="TextView"
+            android:textAllCaps="true"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
+            app:layout_constraintEnd_toEndOf="@+id/restaurantImage"
+            app:layout_constraintStart_toStartOf="@+id/restaurantImage"
+            app:layout_constraintTop_toBottomOf="@+id/restaurantImage" />
+
+        <TextView
+            android:id="@+id/textEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="TextView"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            app:layout_constraintBottom_toBottomOf="@+id/mailImage"
+            app:layout_constraintStart_toEndOf="@+id/mailImage"
+            app:layout_constraintTop_toTopOf="@+id/mailImage" />
+
+        <TextView
+            android:id="@+id/textDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="TextView"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            app:layout_constraintBottom_toBottomOf="@+id/descriptionImage"
+            app:layout_constraintStart_toEndOf="@+id/descriptionImage"
+            app:layout_constraintTop_toTopOf="@+id/descriptionImage" />
+
+        <TextView
+            android:id="@+id/textRestaurantAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="TextView"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            app:layout_constraintBottom_toBottomOf="@+id/addressImage"
+            app:layout_constraintStart_toEndOf="@+id/addressImage"
+            app:layout_constraintTop_toTopOf="@+id/addressImage" />
+
+        <ImageView
+            android:id="@+id/mailImage"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="32dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textName" />
+
+        <ImageView
+            android:id="@+id/descriptionImage"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginTop="24dp"
+            app:layout_constraintStart_toStartOf="@+id/mailImage"
+            app:layout_constraintTop_toBottomOf="@+id/mailImage" />
+
+        <ImageView
+            android:id="@+id/addressImage"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginTop="24dp"
+            app:layout_constraintStart_toStartOf="@+id/descriptionImage"
+            app:layout_constraintTop_toBottomOf="@+id/descriptionImage" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>

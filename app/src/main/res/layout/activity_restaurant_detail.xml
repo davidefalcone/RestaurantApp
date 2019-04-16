@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    android:id="@+id/coordinatorLayout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:paddingHorizontal="16dp"
+    android:layout_height="match_parent">
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:elevation="4dp"
+            android:theme="@style/ThemeOverlay.MaterialComponents.ActionBar"
+            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"/>
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/restaurantImage"
+            android:layout_marginTop="25dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentStart="false"
+            android:layout_alignParentTop="false"
+            android:layout_below="@id/toolbar"
+            app:srcCompat="@drawable/ic_launcher_background" />
+
+        <TextView
+            android:id="@+id/textName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="false"
+            android:layout_alignParentTop="false"
+            android:layout_below="@id/restaurantImage"
+            android:layout_centerHorizontal="true"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
+            android:textAllCaps="true"
+            android:layout_margin="15dp"
+            android:text="TextView" />
+
+        <TextView
+            android:id="@+id/textEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="false"
+            android:layout_marginLeft="95dp"
+            android:layout_below="@id/textName"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            android:text="TextView" />
+
+        <TextView
+            android:id="@+id/textDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="false"
+            android:layout_marginLeft="95dp"
+            android:layout_marginTop="45dp"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            android:layout_below="@id/textEmail"
+            android:text="TextView" />
+
+        <TextView
+            android:id="@+id/textRestaurantAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="false"
+            android:layout_marginLeft="95dp"
+            android:layout_marginTop="45dp"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            android:layout_below="@id/textDescription"
+            android:text="TextView" />
+
+        <ImageView
+            android:id="@+id/mailImage"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_alignParentStart="false"
+            android:layout_alignParentTop="false"
+            android:layout_alignTop="@id/textEmail"
+            android:layout_marginLeft="35dp"
+            app:srcCompat="@drawable/mail" />
+
+        <ImageView
+            android:id="@+id/descriptionImage"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_alignParentStart="false"
+            android:layout_alignParentTop="false"
+            android:layout_alignTop="@id/textDescription"
+            android:layout_marginLeft="35dp"
+            app:srcCompat="@drawable/description" />
+
+        <ImageView
+            android:id="@+id/addressImage"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_alignParentStart="false"
+            android:layout_alignParentTop="false"
+            android:layout_alignTop="@id/textRestaurantAddress"
+            android:layout_marginLeft="35dp"
+            app:srcCompat="@drawable/location" />
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/navigation"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="0dp"
+            android:background="?android:attr/windowBackground"
+            app:menu="@menu/navigation" />
+    </RelativeLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
