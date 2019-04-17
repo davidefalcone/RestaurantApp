@@ -3,24 +3,18 @@ package com.example.restaurantapp;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.RectF;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.example.restaurantapp.DataModel.DishDatabase;
+
+import com.example.restaurantapp.DataModel.Database;
 import com.example.restaurantapp.DataModel.Dish;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -34,6 +28,7 @@ public class DailyOfferFragment extends androidx.fragment.app.Fragment {
     private RecyclerView.LayoutManager layoutManager;
     private DailyOfferAdapter adapter;
     private FloatingActionButton fab;
+    private Database dishDatabase;
 
     private String tagDishes;
     public static final int EDIT_DISH = 0;
@@ -51,8 +46,9 @@ public class DailyOfferFragment extends androidx.fragment.app.Fragment {
         recyclerView = v.findViewById(R.id.recyclerView);
         fab = v.findViewById(R.id.floating_action_button);
 
+        dishDatabase = getDB();
 
-        setRecyclerView(v,DishDatabase.getInstance());
+        setRecyclerView(v);
 
         setFAB();
 
@@ -60,7 +56,7 @@ public class DailyOfferFragment extends androidx.fragment.app.Fragment {
     }
     //this method creates a new LinearLayoutManager and sets it in the recyclerView.
     //Then, an adapter is assigned to the recyclerView.
-    private void setRecyclerView(View v,DishDatabase dishDatabase) {
+    private void setRecyclerView(View v) {
         layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
         //changing in content do not change the layout size of the RecyclerView (from developer.android)
@@ -97,15 +93,15 @@ public class DailyOfferFragment extends androidx.fragment.app.Fragment {
                 switch (resultCode){
                     case RESULT_OK:
                         dish = (Dish)data.getSerializableExtra(tagDishes);
-                        DishDatabase.getInstance().addDish(dish);
-                        adapter.setList(DishDatabase.getInstance().getDishesList());
+                        dishDatabase.addDish(dish);
+                        adapter.setList(dishDatabase.getDishList());
                         adapter.notifyDataSetChanged();
                         commitDB();
                         return;
                     case RESULT_DELETED:
                         dish = (Dish)data.getSerializableExtra(tagDishes);
-                        DishDatabase.getInstance().removeDish(dish.getId());
-                        adapter.setList(DishDatabase.getInstance().getDishesList());
+                        dishDatabase.removeDish(dish.getId());
+                        adapter.setList(dishDatabase.getDishList());
                         adapter.notifyDataSetChanged();
                         commitDB();
                         return;
@@ -116,8 +112,8 @@ public class DailyOfferFragment extends androidx.fragment.app.Fragment {
                 switch (resultCode){
                     case RESULT_OK:
                         dish = (Dish)data.getSerializableExtra(tagDishes);
-                        DishDatabase.getInstance().addDish(dish);
-                        adapter.setList(DishDatabase.getInstance().getDishesList());
+                        dishDatabase.addDish(dish);
+                        adapter.setList(dishDatabase.getDishList());
                         adapter.notifyDataSetChanged();
                         commitDB();
                     case RESULT_CANCELED:
@@ -128,7 +124,6 @@ public class DailyOfferFragment extends androidx.fragment.app.Fragment {
 
     private void commitDB() {
         SharedPreferences preferences = getActivity().getSharedPreferences(tagDishes, MODE_PRIVATE);
-        DishDatabase dishDatabase = DishDatabase.getInstance();
 
         String encodedDB;
         Gson gson = new Gson();
@@ -137,5 +132,17 @@ public class DailyOfferFragment extends androidx.fragment.app.Fragment {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(tagDishes,encodedDB);
         editor.commit();
+    }
+
+    private Database getDB(){
+        Database dishDatabase;
+        SharedPreferences preferences = getContext().getSharedPreferences(tagDishes, MODE_PRIVATE);
+
+        Gson gson = new Gson();
+        if(preferences.getString(tagDishes,"first time")!= "first time") {
+            dishDatabase = gson.fromJson(preferences.getString(tagDishes, ""), Database.class);
+        }
+        else dishDatabase = Database.getInstance();
+        return dishDatabase;
     }
 }

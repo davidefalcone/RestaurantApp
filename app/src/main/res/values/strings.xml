@@ -16,6 +16,7 @@
     <string name="hintDishes">Ordered dishes</string>
     <string name="hintRestaurantAddress">Restaurant Address</string>
     <string name="messageMissingMultipleData">Some data are missing</string>
+    <string name="messageGapsCountIncorrect">Some data are too long</string>
     <string name="title_activity_daily_offer">DailyOfferActivity</string>
     <string name="title_profile">Profile</string>
     <string name="title_daily_offer">Daily Offer</string>

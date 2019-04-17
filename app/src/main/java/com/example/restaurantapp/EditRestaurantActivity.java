@@ -1,7 +1,6 @@
 package com.example.restaurantapp;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,13 +9,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.example.restaurantapp.DataModel.DishDatabase;
 import com.example.restaurantapp.DataModel.Restaurant;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -48,6 +44,8 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
     private String tagDescription;
     private String tagRestaurantAddress;
     private String tagEmpty;
+    private final int GAPS_UNFILLED = 0;
+    private final int GAPS_COUNT_UNCORRECT = 1;
 
     //data needed for persistence
     private SharedPreferences preferences;
@@ -92,10 +90,8 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
 
         restaurant = retrieveRestaurantData();
         if(restaurant != null) {
-
             setRestaurantData(restaurant);
             imageViewEmpty = false;
-
         }
 
         restoreDataAfterRotation(savedInstanceState);
@@ -134,7 +130,6 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
         String json = gson.toJson(restaurant);
         editor.putString(tagRestaurant, json);
         editor.commit();
-        commitDB();
 
     }
 
@@ -261,9 +256,7 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
 
     //this method simply shows a snackbar
     private void showSnackbar() {
-
         Snackbar.make(findViewById(R.id.mycoordinatorLayout), R.string.messageMissingMultipleData, Snackbar.LENGTH_SHORT).show();
-
     }
 /*
     this method is called when the screen orientation
@@ -351,16 +344,4 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
         }
     }
 
-    private void commitDB() {
-        SharedPreferences preferences = getSharedPreferences(tagRestaurant, MODE_PRIVATE);
-        DishDatabase dishDatabase = DishDatabase.getInstance();
-
-        String encodedDB;
-        Gson gson = new Gson();
-        encodedDB = gson.toJson(dishDatabase);
-
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(tagRestaurant,encodedDB);
-        editor.commit();
-    }
 }

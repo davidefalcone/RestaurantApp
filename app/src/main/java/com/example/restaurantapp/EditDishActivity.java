@@ -38,6 +38,8 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
     public static final String tagDishes = "dishes";
     public static final int GALLERY = 0;
     public static final int CAMERA  = 1;
+    private final int GAPS_UNFILLED = 0;
+    private final int GAPS_COUNT_UNCORRECT = 1;
 
     private boolean imageViewEmpty;
 
@@ -147,10 +149,7 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(gapsFilled()){
-                    returntoDailyOfferActivity(readDish());
-                }else
-                    showSnackbar();
+                if(gapsCorrect()) returntoDailyOfferActivity(readDish());
             }
         });
     }
@@ -184,10 +183,15 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
 
     }
 
-    private void showSnackbar() {
-
-        Snackbar.make(findViewById(R.id.coordinatorLayout), R.string.messageMissingMultipleData, Snackbar.LENGTH_SHORT).show();
-
+    private void showSnackbar(int requestCode) {
+        switch (requestCode){
+            case GAPS_UNFILLED:
+                Snackbar.make(findViewById(R.id.coordinatorLayout), R.string.messageMissingMultipleData, Snackbar.LENGTH_SHORT).show();
+                return;
+            case GAPS_COUNT_UNCORRECT:
+                Snackbar.make(findViewById(R.id.coordinatorLayout), R.string.messageGapsCountIncorrect, Snackbar.LENGTH_SHORT).show();
+                return;
+        }
     }
 
     private Dish readDish() {
@@ -237,5 +241,19 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
         editPrice.getEditText().setText(Integer.toString(dish.getPrice()));
         editQuantity.getEditText().setText(Integer.toString(dish.getQuantity()));
         deleteButton.setVisibility(View.VISIBLE);
+    }
+
+    private boolean gapsCorrect(){
+        if(gapsFilled()){
+            if (gapsCorrectCount()) return true;
+            else showSnackbar(GAPS_COUNT_UNCORRECT);
+        }else showSnackbar(GAPS_UNFILLED);
+        return false;
+    }
+
+    private boolean gapsCorrectCount(){
+        if (editName.getEditText().getText().toString().length() > 30||
+                editDescription.getEditText().getText().toString().length() > 120) return false;
+        return true;
     }
 }

@@ -1,12 +1,11 @@
 package com.example.restaurantapp;
 
 import android.content.Context;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.restaurantapp.DataModel.DishDatabase;
+import com.example.restaurantapp.DataModel.Database;
 import com.example.restaurantapp.DataModel.Dish;
 
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 public class DailyOfferAdapter extends RecyclerView.Adapter<DailyOfferViewHolder> {
-    private DishDatabase dishDatabase;
+    private Database dishDatabase;
     private ArrayList<Dish> list;
     private LayoutInflater inflater;
     private Context context;
@@ -27,9 +26,9 @@ public class DailyOfferAdapter extends RecyclerView.Adapter<DailyOfferViewHolder
         void onEditClicked(int position);
     }
 
-    public DailyOfferAdapter(DishDatabase dishDatabase, Context context, ClickListener listener){
+    public DailyOfferAdapter(Database dishDatabase, Context context, ClickListener listener){
         this.dishDatabase = dishDatabase;
-        list = dishDatabase.getDishesList();
+        list = dishDatabase.getDishList();
         this.context = context;
         inflater = LayoutInflater.from(context);
         this.listener = listener;

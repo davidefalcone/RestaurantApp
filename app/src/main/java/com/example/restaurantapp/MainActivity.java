@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 
-import com.example.restaurantapp.DataModel.DishDatabase;
+import com.example.restaurantapp.DataModel.Database;
 import com.example.restaurantapp.DataModel.Restaurant;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
@@ -16,7 +16,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import android.provider.ContactsContract;
 import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
@@ -40,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
         tagRestaurant = "Restaurant";
         tagPreferences = "preferences";
-        tagDishes = "dishes";
+        tagDishes = EditDishActivity.tagDishes;
 
         //setting toolbar
         toolbar = findViewById(R.id.my_toolbar);
@@ -56,7 +55,8 @@ public class MainActivity extends AppCompatActivity {
         if(!restaurantExist())
             goToEditRestaurantActivity();
 
-        getPreferences();
+        Database.getInstance().fillDishDatabase(this);
+        Database.getInstance().fillReservationDatabase();
 
         loadFragment(new DailyOfferFragment());
     }
@@ -95,45 +95,25 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void loadFragment(Fragment fragment) {
-
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.frame_container, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
-
     }
 
     public boolean restaurantExist() {
-
         Restaurant restaurant;
         Gson gson = new Gson();
 
         restaurant = gson.fromJson(preferences.getString(tagRestaurant, ""), Restaurant.class);
 
         return !(restaurant == null);
-
     }
 
     private void goToEditRestaurantActivity() {
-
         Intent i = new Intent(this, EditRestaurantActivity.class);
         startActivity(i);
-
     }
 
-    //this method retrieve the DishDatabase thanks to sharedpref.
-    //if no sharedpref were found, the method allow the DishDatabase class to create a new instance
-    private void getPreferences(){
-        DishDatabase dishDatabase;
-        SharedPreferences preferences = getSharedPreferences(tagDishes, MODE_PRIVATE);
-
-        Gson gson = new Gson();
-        if(preferences.getString(tagDishes,"")!= "") {
-            dishDatabase = gson.fromJson(preferences.getString(tagDishes, ""), DishDatabase.class);
-            DishDatabase.setDishDatabase(dishDatabase);
-        }
-        else dishDatabase = DishDatabase.getInstance();
-        DishDatabase.fillDatabase(this);
-    }
 
 }

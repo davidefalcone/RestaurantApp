@@ -7,7 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import com.example.restaurantapp.DataModel.ReservationDatabase;
+import com.example.restaurantapp.DataModel.Database;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -31,7 +32,7 @@ public class ReservationFragment extends androidx.fragment.app.Fragment {
 
     private void setListView() {
         adapter = new ReservationAdapter(getContext());
-        adapter.setList(ReservationDatabase.getInstance().getReservations());
+        adapter.setList(Database.getInstance().getReservationList());
         listView.setAdapter(adapter);
     }
 
