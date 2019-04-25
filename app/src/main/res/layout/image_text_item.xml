@@ -10,8 +10,9 @@
         android:id="@+id/itemImage"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
+        android:tint="@color/divider"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_launcher_background" />
@@ -27,5 +28,5 @@
         app:layout_constraintBottom_toBottomOf="@+id/itemImage"
         app:layout_constraintStart_toEndOf="@+id/itemImage"
         app:layout_constraintTop_toTopOf="@+id/itemImage"
-        android:textAppearance="@style/TextAppearance.AppCompat.SearchResult.Title"/>
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

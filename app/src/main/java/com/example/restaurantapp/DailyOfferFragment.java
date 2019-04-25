@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.example.restaurantapp.DataModel.Database;
 import com.example.restaurantapp.DataModel.Dish;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -17,7 +16,6 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
@@ -145,4 +143,5 @@ public class DailyOfferFragment extends androidx.fragment.app.Fragment {
         else dishDatabase = Database.getInstance();
         return dishDatabase;
     }
+
 }

@@ -2,14 +2,14 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 <color name="colorNormalBroke">#424242</color>
 <color name="mtrl_textinput_default_box_stroke_color" tools:override="true">@color/colorNormalBroke</color>
-    <color name="colorPrimary">#ff1744</color>
-    <color name="colorPrimaryLight">#ff616f</color>
-    <color name="colorPrimaryDark">#c4001d</color>
-    <color name="colorAccent">#ff8f00</color>
-    <color name="colorAccentLight">#ffc046</color>
-    <color name="colorAccentDark">#c56000</color>
-    <color name="textColorPrimary">#000000</color>
-    <color name="textColorSecondary">#f5f5f5</color>
+    <color name="colorPrimary">#d32f2f</color>
+    <color name="colorPrimaryLight">#ff6659</color>
+    <color name="colorPrimaryDark">#9a0007</color>
+    <color name="colorAccent">#1976d2</color>
+    <color name="colorAccentLight">#63a4ff</color>
+    <color name="colorAccentDark">#004ba0</color>
+    <color name="textColorPrimary">#010101</color>
+    <color name="textColorSecondary">#fefefe</color>
     <color name="icons">#FFFFFF</color>
     <color name="divider">#B6B6B6</color>
 </resources>

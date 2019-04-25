@@ -9,8 +9,11 @@ import androidx.annotation.NonNull;
 import com.example.restaurantapp.DataModel.Database;
 import com.example.restaurantapp.DataModel.Restaurant;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.Gson;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
@@ -20,28 +23,29 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
 
+    private FirebaseUser user;
+
     //view references
     private BottomNavigationView navigation;
     private Toolbar toolbar;
 
-    //reference for sharedPreferences
-    private SharedPreferences preferences;
-
     //this strings will be used for managing sharedPreferences
     public static String tagRestaurant;
-    public static String tagPreferences;
-    private String tagDishes;
+//    public static String tagPreferences;
+//    private String tagDishes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        user = FirebaseAuth.getInstance().getCurrentUser();
+
         tagRestaurant = "Restaurant";
-        tagPreferences = "preferences";
-        tagDishes = EditDishActivity.tagDishes;
+//        tagDishes = EditDishActivity.tagDishes;
 
         //setting toolbar
+        //tagPreferences = "preferences";
         toolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.app_name);
@@ -50,15 +54,7 @@ public class MainActivity extends AppCompatActivity {
         navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
-        preferences = getSharedPreferences(tagPreferences, MODE_PRIVATE);
-
-        if(!restaurantExist())
-            goToEditRestaurantActivity();
-
-        Database.getInstance().fillDishDatabase(this);
-        Database.getInstance().fillReservationDatabase();
-
-        loadFragment(new DailyOfferFragment());
+        loadFragment(new RestaurantDetailFragment());
     }
 
 
@@ -71,14 +67,12 @@ public class MainActivity extends AppCompatActivity {
             switch (item.getItemId()) {
 
                 case R.id.profile:
-
                     fragment = new RestaurantDetailFragment();
                     loadFragment(fragment);
                     invalidateOptionsMenu();
                     return true;
 
                 case R.id.dishes:
-
                     fragment = new DailyOfferFragment();
                     loadFragment(fragment);
                     invalidateOptionsMenu();
@@ -100,20 +94,4 @@ public class MainActivity extends AppCompatActivity {
         transaction.addToBackStack(null);
         transaction.commit();
     }
-
-    public boolean restaurantExist() {
-        Restaurant restaurant;
-        Gson gson = new Gson();
-
-        restaurant = gson.fromJson(preferences.getString(tagRestaurant, ""), Restaurant.class);
-
-        return !(restaurant == null);
-    }
-
-    private void goToEditRestaurantActivity() {
-        Intent i = new Intent(this, EditRestaurantActivity.class);
-        startActivity(i);
-    }
-
-
 }

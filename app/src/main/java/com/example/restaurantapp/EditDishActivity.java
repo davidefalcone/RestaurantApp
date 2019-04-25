@@ -69,18 +69,14 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
     //this method sets an image in the imageview and
     //adds a click listener
     private void setImageView() {
-
         imageViewEmpty = true;
         editImage.setImageResource(R.drawable.editimage);
         editImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 startDialog();
-
             }
         });
-
     }
 
     private void startDialog() {
@@ -90,22 +86,16 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
     //this method starts a special activity in which
     //the user can choose a photo from his/her gallery
     public void gallerySelected() {
-
         Intent galleryIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-
         startActivityForResult(galleryIntent, GALLERY);
-
     }
 
     //this method starts a special activity in which
     //the user can take a photo by the camera
     public void cameraSelected() {
-
         Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-
         startActivityForResult(intent, CAMERA);
-
     }
 
     private void setButton() {

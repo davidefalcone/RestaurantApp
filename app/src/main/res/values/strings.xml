@@ -11,6 +11,9 @@
     <string name="deleteButton">delete</string>
     <string name="galleryText">Gallery</string>
     <string name="cameraText">Camera</string>
+    <string name="loadingMessage">Just a moment</string>
+    <string name="loginError">Something went wrong, retry</string>
+    <string name="googleBucket">gs://feedme-e3c3d.appspot.com</string>
     <string name="hintDate">Date</string>
     <string name="hintNotes">Notes</string>
     <string name="hintDishes">Ordered dishes</string>

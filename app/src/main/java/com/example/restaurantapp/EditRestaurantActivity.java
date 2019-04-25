@@ -5,21 +5,35 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.example.restaurantapp.DataModel.Database;
 import com.example.restaurantapp.DataModel.Restaurant;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
 
 public class EditRestaurantActivity extends AppCompatActivity implements ChoosePictureDialogFragment.onInputListener{
 
@@ -31,26 +45,13 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
     private ImageView editImage;
     private FloatingActionButton fab;
 
-    //reference for restaurant
-    private Restaurant restaurant;
-
     //some tags
-    private String tagDialog;
+    private String tagDialog = "dialog";
+    private final int EDIT_RESTAURANT = RestaurantDetailFragment.EDIT_RESTAURANT;
+    private final int ADD_RESTAURANT = RestaurantDetailFragment.ADD_RESTAURANT;
+    private final String EXTRA_RESTAURANT = RestaurantDetailFragment.EXTRA_RESTAURANT;
     private final int GALLERY = 0;
     private final int CAMERA = 1;
-    private String tagImage;
-    private String tagName;
-    private String tagMail;
-    private String tagDescription;
-    private String tagRestaurantAddress;
-    private String tagEmpty;
-    private final int GAPS_UNFILLED = 0;
-    private final int GAPS_COUNT_UNCORRECT = 1;
-
-    //data needed for persistence
-    private SharedPreferences preferences;
-    private String tagPreferences;
-    private String tagRestaurant;
 
     private boolean imageViewEmpty;
 
@@ -59,22 +60,6 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_restaurant);
-
-        tagDialog = "dialog";
-        tagRestaurant = "Restaurant";
-        tagPreferences = "preferences";
-        tagImage = "image";
-        tagName = "name";
-        tagMail = "mail";
-        tagDescription = "description";
-        tagRestaurantAddress = "restaurantaddress";
-        tagEmpty = "empty";
-        tagRestaurant = MainActivity.tagRestaurant;
-        tagPreferences = MainActivity.tagPreferences;
-
-        imageViewEmpty = true;
-
-        preferences = getSharedPreferences(tagPreferences, MODE_PRIVATE);
 
         //linking view with relative references
         editName = findViewById(R.id.editDish);
@@ -88,60 +73,23 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
 
         setFAB();
 
-        restaurant = retrieveRestaurantData();
-        if(restaurant != null) {
-            setRestaurantData(restaurant);
+
+        if(retrieveRestaurantData() != null) {
+            setRestaurantData(retrieveRestaurantData());
             imageViewEmpty = false;
         }
 
-        restoreDataAfterRotation(savedInstanceState);
-
-    }
-
-    private void saveRestaurant() {
-
-        String name = editName.getEditText().getText().toString();
-        String mail = editMail.getEditText().getText().toString();
-        String description = editDescription.getEditText().getText().toString();
-        String restaurantAddress = editRestaurantAddress.getEditText().getText().toString();
-
-        /*
-        There are two main ways to store the restaurant's image:
-        1)Translate it in Base64 String and then store the resulting
-        string in SharedPreferences file.
-        2)Store the image on the device memory and store
-        its path in the SharedPreference file.
-
-        In this case, the first method has been choosen.
-
-         */
-        String encodedImage = Restaurant.encodeImage(editImage.getDrawable());
-
-        Restaurant restaurant = Restaurant.getIstance();
-
-        restaurant.setName(name);
-        restaurant.setMail(mail);
-        restaurant.setDescription(description);
-        restaurant.setRestaurantAddress(restaurantAddress);
-        restaurant.setEncodedImage(encodedImage);
-
-        SharedPreferences.Editor editor = preferences.edit();
-        Gson gson = new Gson();
-        String json = gson.toJson(restaurant);
-        editor.putString(tagRestaurant, json);
-        editor.commit();
 
     }
 
     //this method set the image editimage.png located in the drawable folder
     //and set a click listener.
     private void setImageview() {
-
+        imageViewEmpty = true;
         editImage.setImageResource(R.drawable.editimage);
         editImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 //the user wants to change image
                 startDialog();
             }
@@ -153,36 +101,27 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
     // or picking an image from the gallery
 
     private void startDialog() {
-
         new ChoosePictureDialogFragment().show(getSupportFragmentManager(), tagDialog);
-
     }
 
     //this method starts a special activity in which
     //the user can choose a photo from his/her gallery
     public void gallerySelected() {
-
         Intent galleryIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-
         startActivityForResult(galleryIntent, GALLERY);
-
     }
 
     //this method starts a special activity in which
     //the user can take a photo by the camera
     public void cameraSelected() {
-
         Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-
         startActivityForResult(intent, CAMERA);
-
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (resultCode == this.RESULT_CANCELED) {
             return;
         }
@@ -198,7 +137,6 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
                     Toast.makeText(getApplicationContext(), "Failed!", Toast.LENGTH_SHORT).show();
                 }
             }
-
         } else if (requestCode == CAMERA) {
             editImage.setImageBitmap((Bitmap) data.getExtras().get("data"));
             imageViewEmpty = false;
@@ -208,26 +146,26 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
     //this method receives a restaurant object as parameter and fill all the gaps
     //of the activity with its data
     private void setRestaurantData(Restaurant restaurant) {
-
         editName.getEditText().setText(restaurant.getName());
         editMail.getEditText().setText(restaurant.getMail());
         editDescription.getEditText().setText(restaurant.getDescription());
         editRestaurantAddress.getEditText().setText(restaurant.getRestaurantAddress());
-        editImage.setImageBitmap(Restaurant.decodeImage(restaurant.getEncodedImage()));
-
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        StorageReference path = FirebaseStorage.getInstance().getReference()
+                .child("restaurants").child(user.getUid()).child("account_image.jpg");
+        Glide.with(this).load(path).diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true).into(editImage);
     }
 
     //this method gets restaurant details from DetailActivity and returns a Restaurant object
     private Restaurant retrieveRestaurantData() {
-
-        Gson gson = new Gson();
-        return gson.fromJson(preferences.getString(tagRestaurant,""), Restaurant.class);
-
+        Intent i = getIntent();
+        Restaurant restaurant = (Restaurant) i.getSerializableExtra(EXTRA_RESTAURANT);
+        return restaurant;
     }
 
     //this method returns a 1 if all gaps are filled, 0 instead.
     private boolean gapsFilled() {
-
         boolean result = true;
 
         if (TextUtils.isEmpty(editName.getEditText().getText().toString()))
@@ -251,64 +189,11 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
             result = false;
 
         return result;
-
     }
 
     //this method simply shows a snackbar
     private void showSnackbar() {
         Snackbar.make(findViewById(R.id.mycoordinatorLayout), R.string.messageMissingMultipleData, Snackbar.LENGTH_SHORT).show();
-    }
-/*
-    this method is called when the screen orientation
-    changes. Before pass to the land version of the activity
-    each gap are stored.
-*/
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        String image = Restaurant.encodeImage(editImage.getDrawable());
-
-        String name = editName.getEditText().getText().toString();
-        String mail = editMail.getEditText().getText().toString();
-        String description = editDescription.getEditText().getText().toString();
-        String restaurantAddress = editRestaurantAddress.getEditText().getText().toString();
-
-        SharedPreferences.Editor editor = preferences.edit();
-
-        editor.putString(tagImage, image);
-        editor.putBoolean(tagEmpty, imageViewEmpty);
-        editor.putString(tagName, name);
-        editor.putString(tagMail, mail);
-        editor.putString(tagDescription, description);
-        editor.putString(tagRestaurantAddress, restaurantAddress);
-
-        editor.commit();
-
-    }
-
-    private void restoreDataAfterRotation(Bundle savedInstanceState) {
-
-        if (savedInstanceState != null) {
-
-            String image = preferences.getString(tagImage, "");
-
-            imageViewEmpty = preferences.getBoolean(tagEmpty, false);
-
-            String name = preferences.getString(tagName, "");
-            String mail = preferences.getString(tagMail, "");
-            String description = preferences.getString(tagDescription, "");
-            String restaurantAddress = preferences.getString(tagRestaurantAddress, "");
-
-            editImage.setImageBitmap(Restaurant.decodeImage(image));
-            editName.getEditText().setText(name);
-            editMail.getEditText().setText(mail);
-            editDescription.getEditText().setText(description);
-            editRestaurantAddress.getEditText().setText(restaurantAddress);
-
-        }
-
     }
 
     //implementing onInputListener I have to override setInput.
@@ -329,19 +214,52 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
         });
     }
 
-    private void onFinish(){
-        Intent i;
-        if (getIntent().getSerializableExtra(tagRestaurant) == null){
-            i = new Intent(this, MainActivity.class);
-            saveRestaurant();
-            startActivity(i);
-            finish();
-        }else{
-            i = getIntent();
-            setResult(RESULT_OK, i);
-            saveRestaurant();
-            finish();
-        }
+    private Restaurant readRestaurant() {
+        Restaurant restaurant = new Restaurant();
+
+        restaurant.setName(editName.getEditText().getText().toString());
+        restaurant.setMail(editMail.getEditText().getText().toString());
+        restaurant.setDescription(editDescription.getEditText().getText().toString());
+        restaurant.setRestaurantAddress(editRestaurantAddress.getEditText().getText().toString());
+
+        return restaurant;
     }
 
+    private void onFinish(){
+        Restaurant restaurant = readRestaurant();
+        uploadImage(restaurant);
+        Intent i = getIntent();
+        i.putExtra(EXTRA_RESTAURANT, restaurant);
+        setResult(RESULT_OK, i);
+        finish();
+    }
+
+    private void uploadImage(Restaurant restaurant){
+        View v = findViewById(R.id.loadingView);
+        ProgressBar progressBar = findViewById(R.id.progress_bar);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        StorageReference imagePath = FirebaseStorage.getInstance().getReference().
+                child("restaurants").child(user.getUid()).child("account_image.jpg");
+        imagePath.delete();
+        restaurant.setImageURL(getResources().getString(R.string.googleBucket)+imagePath.getPath());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Bitmap bitmap = ((BitmapDrawable)editImage.getDrawable()).getBitmap();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data = baos.toByteArray();
+        UploadTask uploadTask = imagePath.putBytes(data);
+        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                v.setVisibility(View.GONE);
+            }
+        });
+        uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                v.setVisibility(View.VISIBLE);
+                progressBar.setProgress((int)(100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount()));
+            }
+        });
+        return;
+    }
 }

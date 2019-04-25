@@ -32,6 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:layout_marginEnd="16dp"
+            android:tint="@color/textColorPrimary"
             android:layout_marginBottom="16dp"
             android:foregroundGravity="bottom"
             android:src="@drawable/baseline_add_24"

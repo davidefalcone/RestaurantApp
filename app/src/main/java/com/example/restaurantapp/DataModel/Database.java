@@ -2,7 +2,16 @@ package com.example.restaurantapp.DataModel;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import com.example.restaurantapp.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -11,12 +20,16 @@ import java.util.Date;
 
 public class Database {
     private static Database instance;
+    DatabaseReference path;
+    FirebaseUser user;
     private ArrayList<Reservation> reservationList;
     private ArrayList<Dish> dishList;
 
     private Database() {
         reservationList = new ArrayList<>();
         dishList = new ArrayList<>();
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        path = FirebaseDatabase.getInstance().getReference().child("restaurants").child(user.getUid());
     }
 
     public static Database getInstance() {
@@ -170,5 +183,9 @@ public class Database {
         image = Dish.encodeImage(context.getResources().getDrawable(R.drawable.tajarin_al_tartufo_bianco_d_alba));
         dishList.add(new Dish("Tajarin al tartufo bianco d’Alba", "The white truffle of Alba, meets in " +
                 "this dish the mythical tajarin, a typical egg pasta from the Langhe and Monferrato.", 20, 15, image));
+    }
+
+    public void writeRestaurant(Restaurant restaurant) {
+        path.child("account").setValue(restaurant);
     }
 }
