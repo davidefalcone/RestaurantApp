@@ -1,14 +1,13 @@
 package com.example.restaurantapp.DataModel;
 
 import java.io.Serializable;
-import java.net.URI;
 
 public class Restaurant implements Serializable {
     private String name;
     private String mail;
     private String description;
     private String restaurantAddress;
-    private String imageURL;
+    private String ID;
 
     //getters and setters
     public String getName() {
@@ -43,11 +42,11 @@ public class Restaurant implements Serializable {
         this.restaurantAddress = restaurantAddress;
     }
 
-    public String getImageURL() {
-        return imageURL;
+    public String getID() {
+        return ID;
     }
 
-    public void setImageURL(String imageURL) {
-        this.imageURL = imageURL;
+    public void setID(String ID) {
+        this.ID = ID;
     }
 }

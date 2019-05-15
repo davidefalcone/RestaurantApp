@@ -14,9 +14,13 @@
     <string name="loadingMessage">Just a moment</string>
     <string name="loginError">Something went wrong, retry</string>
     <string name="googleBucket">gs://feedme-e3c3d.appspot.com</string>
+    <string name="credentialswrong">Credentials are wrong, try again</string>
     <string name="hintDate">Date</string>
     <string name="hintNotes">Notes</string>
     <string name="hintDishes">Ordered dishes</string>
+    <string name="hintPass">Password</string>
+    <string name="signup">Sign Up</string>
+    <string name="signin">Sign In</string>
     <string name="hintRestaurantAddress">Restaurant Address</string>
     <string name="messageMissingMultipleData">Some data are missing</string>
     <string name="messageGapsCountIncorrect">Some data are too long</string>
@@ -24,6 +28,12 @@
     <string name="title_profile">Profile</string>
     <string name="title_daily_offer">Daily Offer</string>
     <string name="title_reservations">Reservations</string>
+    <string name="taphere">Tap for detail</string>
+    <string name="acceptorder">Accept order</string>
+    <string name="declineorder">Decline order</string>
+    <string name="orderdialogtitle">Manage order</string>
+    <string name="orderdialogtext">Would you accept this order?</string>
     <string name="messageNoDishes">You have no dishes yet</string>
+    <string name="title_activity_map_delivery_men">Map</string>
 
 </resources>

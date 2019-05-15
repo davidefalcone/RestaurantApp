@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import com.example.restaurantapp.DataModel.Database;
 import com.example.restaurantapp.DataModel.Dish;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.gson.Gson;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -18,7 +17,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
-import static android.content.Context.MODE_PRIVATE;
 
 public class DailyOfferFragment extends androidx.fragment.app.Fragment {
 
@@ -44,7 +42,7 @@ public class DailyOfferFragment extends androidx.fragment.app.Fragment {
         recyclerView = v.findViewById(R.id.recyclerView);
         fab = v.findViewById(R.id.floating_action_button);
 
-        dishDatabase = getDB();
+        dishDatabase = Database.getInstance();
 
         setRecyclerView(v);
 
@@ -57,20 +55,27 @@ public class DailyOfferFragment extends androidx.fragment.app.Fragment {
     private void setRecyclerView(View v) {
         layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
-        //changing in content do not change the layout size of the RecyclerView (from developer.android)
+        //changing in content do not change the layout
+        // size of the RecyclerView (from developer.android)
         recyclerView.setHasFixedSize(true);
-        recyclerView.setEmptyView(v.findViewById(R.id.no_dishes_view));
-        adapter = new DailyOfferAdapter(dishDatabase, getContext(), new DailyOfferAdapter.ClickListener() {
+        //setting adapter
+        adapter = new DailyOfferAdapter(getContext(), new DailyOfferAdapter.ClickListener() {
             @Override
             public void onEditClicked(int position) {
+                //the following loc manages the click on the edit button
                 Intent i = new Intent(getContext(), EditDishActivity.class);
                 i.putExtra(tagDishes, adapter.getItem(position));
                 startActivityForResult(i, EDIT_DISH);
             }
         });
+        Database.getInstance().fillDishDatabase(adapter);
+        //some decorations for reyclerview
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);
         recyclerView.addItemDecoration(dividerItemDecoration);
         recyclerView.setAdapter(adapter);
+        //setting a view which is showed only
+        //if there are no dishes in the daily offer
+        recyclerView.setEmptyView(v.findViewById(R.id.no_dishes_view));
     }
 
     private void setFAB(){
@@ -78,7 +83,7 @@ public class DailyOfferFragment extends androidx.fragment.app.Fragment {
             @Override
             public void onClick(View v) {
                 Intent i  = new Intent(getContext(), EditDishActivity.class);
-                startActivityForResult(i,ADD_DISH);
+                startActivityForResult(i, ADD_DISH);
             }
         });
     }
@@ -91,17 +96,16 @@ public class DailyOfferFragment extends androidx.fragment.app.Fragment {
                 switch (resultCode){
                     case RESULT_OK:
                         dish = (Dish)data.getSerializableExtra(tagDishes);
+                        dishDatabase.removeDish(dish);
                         dishDatabase.addDish(dish);
                         adapter.setList(dishDatabase.getDishList());
                         adapter.notifyDataSetChanged();
-                        commitDB();
                         return;
                     case RESULT_DELETED:
                         dish = (Dish)data.getSerializableExtra(tagDishes);
-                        dishDatabase.removeDish(dish.getId());
+                        dishDatabase.removeDish(dish);
                         adapter.setList(dishDatabase.getDishList());
                         adapter.notifyDataSetChanged();
-                        commitDB();
                         return;
                     case RESULT_CANCELED:
                         return;
@@ -113,35 +117,10 @@ public class DailyOfferFragment extends androidx.fragment.app.Fragment {
                         dishDatabase.addDish(dish);
                         adapter.setList(dishDatabase.getDishList());
                         adapter.notifyDataSetChanged();
-                        commitDB();
                     case RESULT_CANCELED:
                         return;
                 }
         }
-    }
-
-    private void commitDB() {
-        SharedPreferences preferences = getActivity().getSharedPreferences(tagDishes, MODE_PRIVATE);
-
-        String encodedDB;
-        Gson gson = new Gson();
-        encodedDB = gson.toJson(dishDatabase);
-
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(tagDishes,encodedDB);
-        editor.commit();
-    }
-
-    private Database getDB(){
-        Database dishDatabase;
-        SharedPreferences preferences = getContext().getSharedPreferences(tagDishes, MODE_PRIVATE);
-
-        Gson gson = new Gson();
-        if(preferences.getString(tagDishes,"first time")!= "first time") {
-            dishDatabase = gson.fromJson(preferences.getString(tagDishes, ""), Database.class);
-        }
-        else dishDatabase = Database.getInstance();
-        return dishDatabase;
     }
 
 }

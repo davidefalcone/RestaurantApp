@@ -1,60 +1,46 @@
 package com.example.restaurantapp;
 
-
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 
 import com.example.restaurantapp.DataModel.Database;
 import com.example.restaurantapp.DataModel.Restaurant;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.gson.Gson;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity {
+import static com.example.restaurantapp.RestaurantDetailFragment.EXTRA_RESTAURANT;
 
-    private FirebaseUser user;
+public class MainActivity extends AppCompatActivity {
 
     //view references
     private BottomNavigationView navigation;
     private Toolbar toolbar;
 
-    //this strings will be used for managing sharedPreferences
-    public static String tagRestaurant;
-//    public static String tagPreferences;
-//    private String tagDishes;
+    public static final int ADD_RESTAURANT = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        user = FirebaseAuth.getInstance().getCurrentUser();
-
-        tagRestaurant = "Restaurant";
-//        tagDishes = EditDishActivity.tagDishes;
-
-        //setting toolbar
-        //tagPreferences = "preferences";
         toolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.app_name);
 
+        if (getIntent().getBooleanExtra(LoginActivity.EXTRA_IS_NEW, true))
+            createUser();
+        else loadFragment(new DailyOfferFragment());
+
         //setting navigation bar
         navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-
-        loadFragment(new RestaurantDetailFragment());
     }
 
 
@@ -79,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
                     return true;
 
                 case R.id.reservations:
-                    fragment = new ReservationFragment();
+                    fragment = new OrderListFragment();
                     loadFragment(fragment);
                     invalidateOptionsMenu();
                     return true;
@@ -92,6 +78,33 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.frame_container, fragment);
         transaction.addToBackStack(null);
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     }
+
+    private void createUser() {
+        Intent i = new Intent(this, EditRestaurantActivity.class);
+        startActivityForResult(i, ADD_RESTAURANT);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        for (Fragment fragment : getSupportFragmentManager().getFragments()) {
+            fragment.onActivityResult(requestCode, resultCode, data);
+        }
+        if (requestCode == ADD_RESTAURANT){
+            Restaurant restaurant;
+            switch (resultCode) {
+                case RESULT_OK:
+                    restaurant = (Restaurant) data.getSerializableExtra(EXTRA_RESTAURANT);
+                    Database.getInstance().writeRestaurant(restaurant);
+                    loadFragment(new DailyOfferFragment());
+                    return;
+                case RESULT_CANCELED:
+                    createUser();
+                    return;
+            }
+        }
+    }
+
 }

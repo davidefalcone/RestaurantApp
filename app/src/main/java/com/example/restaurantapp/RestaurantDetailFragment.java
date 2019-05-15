@@ -1,16 +1,22 @@
 package com.example.restaurantapp;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.example.restaurantapp.DataModel.Database;
 import com.example.restaurantapp.DataModel.Restaurant;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -38,13 +44,13 @@ public class RestaurantDetailFragment extends androidx.fragment.app.Fragment {
     private TextView restaurantDescription;
     private TextView restaurantAddress;
     private FloatingActionButton fab;
+    private ProgressBar progressBar;
 
     private Restaurant restaurant;
 
     public static final String EXTRA_RESTAURANT = "EXTRA_RESTAURANT";
 
     public static final int EDIT_RESTAURANT = 0;
-    public static final int ADD_RESTAURANT = 1;
 
     @Nullable
     @Override
@@ -59,6 +65,7 @@ public class RestaurantDetailFragment extends androidx.fragment.app.Fragment {
         restaurantDescription = v.findViewById(R.id.textDescription);
         restaurantAddress = v.findViewById(R.id.textRestaurantAddress);
         fab = v.findViewById(R.id.floating_action_button);
+        progressBar = v.findViewById(R.id.progress_bar);
 
         getRestaurantData();
 
@@ -80,11 +87,23 @@ public class RestaurantDetailFragment extends androidx.fragment.app.Fragment {
         restaurantAddress.setText(restaurant.getRestaurantAddress());
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         StorageReference path = FirebaseStorage.getInstance().getReference()
-                .child("restaurants").child(user.getUid()).child("account_image.jpg");
+                .child("restaurants").child(user.getUid()).child("account_image");
         Glide.with(getContext()).load(path).diskCacheStrategy(DiskCacheStrategy.NONE)
-                .skipMemoryCache(true).into(restaurantImage);
-    }
+                .skipMemoryCache(true).addListener(new RequestListener<Drawable>() {
+            @Override
+            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                progressBar.setVisibility(View.GONE);
+                return false;
+            }
 
+            @Override
+            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                progressBar.setVisibility(View.GONE);
+                return false;
+            }
+        }).into(restaurantImage);
+
+    }
 
     private void goToEditRestaurantActivity(int requestcode) {
         Intent intent = new Intent(getContext(), EditRestaurantActivity.class);
@@ -99,28 +118,15 @@ public class RestaurantDetailFragment extends androidx.fragment.app.Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Restaurant restaurant = (Restaurant) data.getSerializableExtra(EXTRA_RESTAURANT);
-        switch (requestCode){
-            case ADD_RESTAURANT:
-                switch (resultCode){
-                    case RESULT_OK:
-                        Database.getInstance().writeRestaurant(restaurant);
-                        setRestaurantData(restaurant);
-                        return;
-                    case RESULT_CANCELED:
-                        //TODO: check here!
-                        goToEditRestaurantActivity(ADD_RESTAURANT);
-                        return;
-                }
-            case EDIT_RESTAURANT:
-                switch (resultCode){
-                    case RESULT_OK:
-                        Database.getInstance().writeRestaurant(restaurant);
-                        setRestaurantData(restaurant);
-                        return;
-                    case RESULT_CANCELED:
-                        return;
-                }
+        Restaurant restaurant;
+        switch (resultCode){
+            case RESULT_OK:
+                restaurant = (Restaurant) data.getSerializableExtra(EXTRA_RESTAURANT);
+                Database.getInstance().writeRestaurant(restaurant);
+                setRestaurantData(restaurant);
+                return;
+            case RESULT_CANCELED:
+                return;
         }
     }
 
@@ -128,16 +134,12 @@ public class RestaurantDetailFragment extends androidx.fragment.app.Fragment {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference path = FirebaseDatabase.getInstance().getReference()
                 .child("restaurants").child(user.getUid()).child("account");
-
         path.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 //TODO: add a progress bar
-                if (dataSnapshot.getValue() == null) goToEditRestaurantActivity(ADD_RESTAURANT);
-                else {
-                    restaurant = dataSnapshot.getValue(Restaurant.class);
-                    setRestaurantData(restaurant);
-                }
+                restaurant = dataSnapshot.getValue(Restaurant.class);
+                setRestaurantData(restaurant);
             }
 
             @Override

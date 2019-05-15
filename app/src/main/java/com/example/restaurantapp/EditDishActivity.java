@@ -6,6 +6,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -16,21 +17,32 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.restaurantapp.DataModel.Dish;
+import com.example.restaurantapp.DataModel.Restaurant;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class EditDishActivity extends AppCompatActivity implements ChoosePictureDialogFragment.onInputListener{
-
+    private FirebaseUser user;
+    private StorageReference path;
     //view references
     private ImageView editImage;
     private TextInputLayout editName;
     private TextInputLayout editDescription;
     private TextInputLayout editPrice;
-    private TextInputLayout editQuantity;
     private FloatingActionButton fab;
     private Button deleteButton;
 
@@ -48,12 +60,15 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_dish);
 
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        path = FirebaseStorage.getInstance().getReference()
+                .child("restaurants").child(user.getUid());
+
         //getting view references
         editImage = findViewById(R.id.dishImage);
         editName = findViewById(R.id.editDish);
         editDescription = findViewById(R.id.editDescription);
         editPrice = findViewById(R.id.editPrice);
-        editQuantity = findViewById(R.id.editQuantity);
         fab = findViewById(R.id.floating_action_button);
         deleteButton = findViewById(R.id.deleteButton);
 
@@ -63,7 +78,7 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
 
         setButton();
 
-        if( getDish() != null) setGaps(getDish());
+        if(getDish() != null) setGaps(getDish());
     }
 
     //this method sets an image in the imageview and
@@ -72,6 +87,7 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
         imageViewEmpty = true;
         editImage.setImageResource(R.drawable.editimage);
         editImage.setOnClickListener(new View.OnClickListener() {
+            //if the user clicks on the image, an alert dialog appears.
             @Override
             public void onClick(View v) {
                 startDialog();
@@ -98,14 +114,16 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
         startActivityForResult(intent, CAMERA);
     }
 
+    //setting delete button
     private void setButton() {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent i = getIntent();
                 setResult(DailyOfferFragment.RESULT_DELETED, i);
+                deleteImage(readDish());
                 i.putExtra(tagDishes, readDish());
-                finish();
+
             }
         });
     }
@@ -139,12 +157,10 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(gapsCorrect()) returntoDailyOfferActivity(readDish());
+                if(gapsCorrect()) returnToDailyOfferActivity(readDish());
             }
         });
     }
-
-
 
     private boolean gapsFilled() {
 
@@ -160,11 +176,6 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
 
         if (TextUtils.isEmpty(editPrice.getEditText().getText().toString()))
             result = false;
-
-
-        if (TextUtils.isEmpty(editQuantity.getEditText().getText().toString()))
-            result = false;
-
 
         if (imageViewEmpty == true)
             result = false;
@@ -188,8 +199,6 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
         String name = editName.getEditText().getText().toString();
         String description = editDescription.getEditText().getText().toString();
         int price = Integer.parseInt(editPrice.getEditText().getText().toString());
-        int quantity = Integer.parseInt(editQuantity.getEditText().getText().toString());
-        String encodedImage = Dish.encodeImage(editImage.getDrawable());
 
         Dish dish;
         if(getIntent().getSerializableExtra(tagDishes) == null) dish  = new Dish();
@@ -198,17 +207,15 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
         dish.setName(name);
         dish.setDescription(description);
         dish.setPrice(price);
-        dish.setQuantity(quantity);
-        dish.setEncodedImage(encodedImage);
 
         return dish;
     }
 
-    private void returntoDailyOfferActivity(Dish dish) {
+    private void returnToDailyOfferActivity(Dish dish) {
         Intent i = getIntent();
         setResult(RESULT_OK, i);
         i.putExtra(tagDishes, dish);
-        finish();
+        uploadImage(dish);
     }
 
     @Override
@@ -224,13 +231,14 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
     }
 
     private void setGaps(Dish dish) {
-        editImage.setImageBitmap(Dish.decodeImage(dish.getEncodedImage()));
         imageViewEmpty = false;
         editName.getEditText().setText(dish.getName());
         editDescription.getEditText().setText(dish.getDescription());
         editPrice.getEditText().setText(Integer.toString(dish.getPrice()));
-        editQuantity.getEditText().setText(Integer.toString(dish.getQuantity()));
+//        editQuantity.getEditText().setText(Integer.toString(dish.getQuantity()));
         deleteButton.setVisibility(View.VISIBLE);
+        Glide.with(this).load(path.child(dish.getName())).diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true).into(editImage);
     }
 
     private boolean gapsCorrect(){
@@ -245,5 +253,34 @@ public class EditDishActivity extends AppCompatActivity implements ChoosePicture
         if (editName.getEditText().getText().toString().length() > 30||
                 editDescription.getEditText().getText().toString().length() > 120) return false;
         return true;
+    }
+
+    private void uploadImage(Dish dish){
+        View v = findViewById(R.id.loadingView);
+        path.child(dish.getName()).delete();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Bitmap bitmap = ((BitmapDrawable)editImage.getDrawable()).getBitmap();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data = baos.toByteArray();
+        UploadTask uploadTask = path.child(dish.getName()).putBytes(data);
+        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                v.setVisibility(View.GONE);
+                finish();
+            }
+        });
+        uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                v.setVisibility(View.VISIBLE);
+            }
+        });
+        return;
+    }
+
+    private void deleteImage(Dish dish) {
+        path.child(dish.getName()).delete();
+        finish();
     }
 }

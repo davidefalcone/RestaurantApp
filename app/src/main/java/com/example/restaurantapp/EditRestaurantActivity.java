@@ -1,9 +1,6 @@
 package com.example.restaurantapp;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -11,14 +8,19 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.example.restaurantapp.DataModel.Database;
 import com.example.restaurantapp.DataModel.Restaurant;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -29,26 +31,25 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URI;
 
 public class EditRestaurantActivity extends AppCompatActivity implements ChoosePictureDialogFragment.onInputListener{
 
     //references for views
     private TextInputLayout editName;
-    private TextInputLayout editMail;
     private TextInputLayout editDescription;
     private TextInputLayout editRestaurantAddress;
     private ImageView editImage;
     private FloatingActionButton fab;
+    private Toolbar toolbar;
+//    private GeoDataClient mGeoDataClient;
+//    private PlaceDetectionClient mPlaceDetectionClient;
+    private PlaceAutocompleteAdapter adapter;
 
     //some tags
     private String tagDialog = "dialog";
-    private final int EDIT_RESTAURANT = RestaurantDetailFragment.EDIT_RESTAURANT;
-    private final int ADD_RESTAURANT = RestaurantDetailFragment.ADD_RESTAURANT;
     private final String EXTRA_RESTAURANT = RestaurantDetailFragment.EXTRA_RESTAURANT;
     private final int GALLERY = 0;
     private final int CAMERA = 1;
@@ -56,14 +57,18 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
     private boolean imageViewEmpty;
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_restaurant);
 
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle(R.string.app_name);
+
         //linking view with relative references
         editName = findViewById(R.id.editDish);
-        editMail = findViewById(R.id.editEmail);
         editDescription = findViewById(R.id.editDescription);
         editRestaurantAddress = findViewById(R.id.editRestaurantAddress);
         editImage = findViewById(R.id.editImage);
@@ -73,12 +78,13 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
 
         setFAB();
 
+        setAddressAutoCompletion();
+
 
         if(retrieveRestaurantData() != null) {
             setRestaurantData(retrieveRestaurantData());
             imageViewEmpty = false;
         }
-
 
     }
 
@@ -147,12 +153,11 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
     //of the activity with its data
     private void setRestaurantData(Restaurant restaurant) {
         editName.getEditText().setText(restaurant.getName());
-        editMail.getEditText().setText(restaurant.getMail());
         editDescription.getEditText().setText(restaurant.getDescription());
         editRestaurantAddress.getEditText().setText(restaurant.getRestaurantAddress());
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         StorageReference path = FirebaseStorage.getInstance().getReference()
-                .child("restaurants").child(user.getUid()).child("account_image.jpg");
+                .child("restaurants").child(user.getUid()).child("account_image");
         Glide.with(this).load(path).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .skipMemoryCache(true).into(editImage);
     }
@@ -169,11 +174,6 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
         boolean result = true;
 
         if (TextUtils.isEmpty(editName.getEditText().getText().toString()))
-            result = false;
-
-
-
-        if (TextUtils.isEmpty(editMail.getEditText().getText().toString()))
             result = false;
 
 
@@ -218,7 +218,6 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
         Restaurant restaurant = new Restaurant();
 
         restaurant.setName(editName.getEditText().getText().toString());
-        restaurant.setMail(editMail.getEditText().getText().toString());
         restaurant.setDescription(editDescription.getEditText().getText().toString());
         restaurant.setRestaurantAddress(editRestaurantAddress.getEditText().getText().toString());
 
@@ -227,21 +226,19 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
 
     private void onFinish(){
         Restaurant restaurant = readRestaurant();
-        uploadImage(restaurant);
+        uploadImage();
         Intent i = getIntent();
         i.putExtra(EXTRA_RESTAURANT, restaurant);
         setResult(RESULT_OK, i);
-        finish();
     }
 
-    private void uploadImage(Restaurant restaurant){
+    private void uploadImage(){
         View v = findViewById(R.id.loadingView);
-        ProgressBar progressBar = findViewById(R.id.progress_bar);
+
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         StorageReference imagePath = FirebaseStorage.getInstance().getReference().
-                child("restaurants").child(user.getUid()).child("account_image.jpg");
+                child("restaurants").child(user.getUid()).child("account_image");
         imagePath.delete();
-        restaurant.setImageURL(getResources().getString(R.string.googleBucket)+imagePath.getPath());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Bitmap bitmap = ((BitmapDrawable)editImage.getDrawable()).getBitmap();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -251,15 +248,31 @@ public class EditRestaurantActivity extends AppCompatActivity implements ChooseP
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 v.setVisibility(View.GONE);
+                finish();
             }
         });
         uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                 v.setVisibility(View.VISIBLE);
-                progressBar.setProgress((int)(100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount()));
             }
         });
         return;
+    }
+
+    private void setAddressAutoCompletion() {
+//        // Construct a GeoDataClient.
+//        mGeoDataClient = Places.getGeoDataClient(this);
+//        // Construct a PlaceDetectionClient.
+//        mPlaceDetectionClient = Places.getPlaceDetectionClient(this);
+        adapter = new PlaceAutocompleteAdapter(this);
+        ((AutoCompleteTextView) editRestaurantAddress.getEditText()).setAdapter(adapter);
+        ((AutoCompleteTextView) editRestaurantAddress.getEditText()).setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                adapter.notifyDataSetChanged();
+            }
+        });
+
     }
 }

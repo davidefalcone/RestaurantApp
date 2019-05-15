@@ -1,11 +1,35 @@
 package com.example.restaurantapp;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
+import com.example.restaurantapp.DataModel.Database;
+import com.example.restaurantapp.DataModel.Dish;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 public class DailyOfferRecyclerView extends RecyclerView {
 
@@ -40,14 +64,12 @@ public class DailyOfferRecyclerView extends RecyclerView {
     }
 
     private void checkIfEmpty() {
-
         if (emptyView != null && getAdapter() != null) {
             final boolean emptyViewVisible =
                     getAdapter().getItemCount() == 0;
             emptyView.setVisibility(emptyViewVisible ? VISIBLE : GONE);
             setVisibility(emptyViewVisible ? GONE : VISIBLE);
         }
-
     }
 
     @Override
@@ -60,14 +82,11 @@ public class DailyOfferRecyclerView extends RecyclerView {
         if (adapter != null) {
             adapter.registerAdapterDataObserver(observer);
         }
-
         checkIfEmpty();
     }
 
     public void setEmptyView(View emptyView) {
-
         this.emptyView = emptyView;
         checkIfEmpty();
-
     }
 }
